@@ -213,7 +213,6 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
                 try handler.perform([bodyPoseRequest])
                 guard let observations = bodyPoseRequest.results else { return }
                 for observation in observations {
-                    let root = try observation.recognizedPoint(.root)
                     print("bodyHeight:", observation.bodyHeight)
                     print("heightEstimation:", observation.heightEstimation.rawValue)
                 }

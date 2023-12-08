@@ -27,7 +27,6 @@ class CameraManager: ObservableObject, CaptureDataReceiver {
     let controller: CameraController
     var cancellables = Set<AnyCancellable>()
     var session: AVCaptureSession { controller.captureSession }
-    var timer: Timer?
     
     init() {
         // Create an object to store the captured data for the views to present.
@@ -41,13 +40,6 @@ class CameraManager: ObservableObject, CaptureDataReceiver {
             self.orientation = UIDevice.current.orientation
         }.store(in: &cancellables)
         controller.delegate = self
-        startAutoCapture()
-    }
-    
-    func startAutoCapture() {
-        timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: { _ in
-            self.startPhotoCapture()
-        })
     }
     
     func startPhotoCapture() {
@@ -59,7 +51,6 @@ class CameraManager: ObservableObject, CaptureDataReceiver {
         controller.startStream()
         processingCapturedResult = false
         waitingForCapture = false
-        startAutoCapture()
     }
     
     func onNewPhotoData(capturedData: CameraCapturedData) {
