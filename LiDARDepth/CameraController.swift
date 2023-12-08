@@ -8,6 +8,7 @@ An object that configures and manages the capture pipeline to stream video and L
 import Foundation
 import AVFoundation
 import CoreImage
+import Vision
 
 protocol CaptureDataReceiver: AnyObject {
     func onNewData(capturedData: CameraCapturedData)
@@ -203,6 +204,26 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
         
         // Stop the stream until the user returns to streaming mode.
         stopStream()
+        
+        if #available(iOS 17.0, *) {
+            let bodyPoseRequest = VNDetectHumanBodyPose3DRequest()
+            
+            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, depthData: depthData, orientation: .up)
+            do {
+                try handler.perform([bodyPoseRequest])
+                guard let observations = bodyPoseRequest.results else { return }
+                for observation in observations {
+                    let root = try observation.recognizedPoint(.root)
+                    print("bodyHeight:", observation.bodyHeight)
+                    print("heightEstimation:", observation.heightEstimation.rawValue)
+                }
+                
+            } catch {
+                DispatchQueue.main.async {
+                    print("[Vision error]", error.localizedDescription)
+                }
+            }
+        }
         
         // Convert the depth data to the expected format.
         let convertedDepth = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat16)
